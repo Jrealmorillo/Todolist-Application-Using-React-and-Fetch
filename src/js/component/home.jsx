@@ -6,8 +6,8 @@ const Home = () => {
   const [showTrashIcon, setShowTrashIcon] = useState(-1);
   const [allDeleted, setAllDeleted] = useState(false);
   const [toDos, setToDos] = useState([]);
-  const [inputToDos, setInputToDos] = useState([]); // Estado para las tareas ingresadas por el input
-  const [apiToDos, setApiToDos] = useState([]); // Estado para las tareas obtenidas desde la API
+  const [inputToDos, setInputToDos] = useState([]); 
+  const [apiToDos, setApiToDos] = useState([]); 
 
   const handleChange = (event) => setInputValue(event.target.value);
 
@@ -42,7 +42,7 @@ const Home = () => {
     <div className="container col-4 text-center align-items-center">
       <h1 className="tracking-in-expand-forward-top">My ToDo List</h1>
       <h6 className="tracking-in-expand-forward-top">(using Fetch...bloody hell!)</h6>
-      <ul className="align-items-center">
+      <ul className="align-items-center tracking-in-expand-forward-top">
         <li className="align-items-center shake-horizontal">
           <input
             type="text"
