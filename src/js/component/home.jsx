@@ -1,48 +1,94 @@
-import { useState, useEffect } from "react";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 const Home = () => {
   const [inputValue, setInputValue] = useState("");
-  const [showTrashIcon, setShowTrashIcon] = useState(-1);
-  const [allDeleted, setAllDeleted] = useState(false);
   const [toDos, setToDos] = useState([]);
-  const [inputToDos, setInputToDos] = useState([]); 
-  const [apiToDos, setApiToDos] = useState([]); 
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleChange = (event) => setInputValue(event.target.value);
 
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
-      setInputToDos((toDos) => [...toDos, inputValue]);
+      let newTodo = {
+        label: inputValue,
+        done: false
+      };
+      setToDos((toDos) => [...toDos, newTodo]);
       setInputValue("");
-      setAllDeleted(false);
-    }
-  };
-
-  const handleDeleteToDo = (index) => {
-    if (index < inputToDos.length) {
-      setInputToDos((toDos) => toDos.filter((_, i) => i !== index));
-    } else {
-      const apiIndex = index - inputToDos.length;
-      setApiToDos((toDos) => toDos.filter((_, i) => i !== apiIndex));
-    }
-    if (inputToDos.length + apiToDos.length === 1) {
-      setAllDeleted(true);
     }
   };
 
   useEffect(() => {
     fetch("https://assets.breatheco.de/apis/fake/todos/user/jrealmorillo")
       .then((response) => response.json())
-      .then((response) => setApiToDos(response))
+      .then((result) => setToDos(Array.isArray(result) ? result : []))
       .catch((error) => console.log("Error:", error));
   }, []);
 
+  const updateToDos = (toDos) => {
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    var requestOptions = {
+      method: "PUT",
+      headers: myHeaders,
+      body: JSON.stringify(toDos),
+      redirect: "follow"
+    };
+
+    fetch(
+      "https://assets.breatheco.de/apis/fake/todos/user/jrealmorillo",
+      requestOptions
+    )
+      .then((response) => response.json())
+      .then((result) => console.log(result))
+      .catch((error) => console.log("error", error));
+  };
+
+  const deleteOneToDo = (index) => {
+    let newToDo = toDos.filter((_, todoIndex) => todoIndex !== index);
+    setToDos(newToDo);
+    updateToDos(newToDo);
+  };
+
+  const deleteAllToDos = () => {
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    var requestOptions = {
+      method: "DELETE",
+      headers: myHeaders,
+      redirect: "follow"
+    };
+
+    fetch(
+      "https://assets.breatheco.de/apis/fake/todos/user/jrealmorillo",
+      requestOptions
+    )
+      .then((response) => {
+        if (response.ok) {
+          setToDos([]);
+          console.log("All tasks deleted successfully.");
+        } else {
+          console.log("Error deleting tasks:", response.json());
+        }
+      })
+      .catch((error) => console.log("error", error));
+  };
+
+  const handleMouseOver = () => {
+    setShowAlert(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowAlert(false);
+  };
+
   return (
     <div className="container col-4 text-center align-items-center">
-      <h1 className="tracking-in-expand-forward-top">My ToDo List</h1>
-      <h6 className="tracking-in-expand-forward-top">(using Fetch...bloody hell!)</h6>
-      <ul className="align-items-center tracking-in-expand-forward-top">
+      <h2 className="tracking-in-expand-forward-top">This is a ToDo List...</h2>
+      <h6 className="tracking-in-expand-forward-top">...using Fetch</h6>
+      <ul className="align-items-center tracking-in-expand-forward-bottom">
         <li className="align-items-center shake-horizontal">
           <input
             type="text"
@@ -52,57 +98,51 @@ const Home = () => {
             onKeyDown={handleKeyDown}
           />
         </li>
-        {inputToDos.map((item, index) => (
+        {toDos.map((todos, id) => (
           <li
-            key={index}
-            className="d-flex flex-nowrap justify-content-center list-item"
-            onMouseEnter={() => setShowTrashIcon(index)}
-            onMouseLeave={() => setShowTrashIcon(-1)}
+            key={id}
+            className="d-flex flex-nowrap justify-content-between list-item"
           >
-            <span>{item}</span>
+            {todos.label}
             <span>
-              {showTrashIcon === index && (
-                <i
-                  className="fa fa-trash"
-                  onClick={() => handleDeleteToDo(index)}
-                />
-              )}
+              <i
+                className="fas fa-trash-alt"
+                onClick={() => {
+                  deleteOneToDo(id);
+                }}
+              ></i>
             </span>
           </li>
         ))}
-        {apiToDos.map((item, index) => (
-          <li
-            key={index + inputToDos.length}
-            className="d-flex flex-nowrap justify-content-center list-item"
-            onMouseEnter={() => setShowTrashIcon(index + inputToDos.length)}
-            onMouseLeave={() => setShowTrashIcon(-1)}
-          >
-            <span>{item.label}</span>
-            <span>
-              {showTrashIcon === index + inputToDos.length && (
-                <i
-                  className="fa fa-trash"
-                  onClick={() => handleDeleteToDo(index + inputToDos.length)}
-                />
-              )}
-            </span>
-            </li>
-        ))}
       </ul>
-      <div className="text-center tracking-in-expand-forward-bottom">
-         {inputToDos.length + apiToDos.length > 0 && (
-           <div>You have {inputToDos.length + apiToDos.length} remaining tasks</div>
-         )}
-         {allDeleted && <div>Congratulations! Now go play videogames you naugthy boy!</div>}
-         {!allDeleted && inputToDos.length + apiToDos.length === 0 && (
-           <div className="d-flex flex-nowrap justify-content-center">There is currently nothing left to do</div>
-         )}
-       </div>
+      <div>You have {toDos.length} remaining tasks</div>
+      <div
+        className="d-grid gap-2 col-6 p-5 mx-auto"
+        onMouseOver={handleMouseOver}
+        onMouseLeave={handleMouseLeave}
+      >
+        {showAlert && (
+          <div className="alert alert-danger fw-bold mt-2">
+            Clicking will delete all tasks. Are you completely sure?
+          </div>
+        )}
+        <button
+          type="button"
+          className="btn btn-danger btn-lg fw-bold"
+          onClick={deleteAllToDos}
+        >
+          Delete all tasks
+        </button>
+
+      </div>
     </div>
   );
 };
 
 export default Home;
+
+
+
 
 
 
