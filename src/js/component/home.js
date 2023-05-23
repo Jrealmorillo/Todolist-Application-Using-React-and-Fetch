@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
+import InputTask from "./inputTask";
+import TaskList from "./taskList";
+import DeleteAllTasks from "./deleteAllTasks";
 
 const Home = () => {
+
   const [inputValue, setInputValue] = useState("");
   const [toDos, setToDos] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
+
 
   const handleChange = (event) => setInputValue(event.target.value);
 
@@ -26,10 +31,10 @@ const Home = () => {
   }, []);
 
   const updateToDos = (toDos) => {
-    var myHeaders = new Headers();
+    let myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
-    var requestOptions = {
+    let requestOptions = {
       method: "PUT",
       headers: myHeaders,
       body: JSON.stringify(toDos),
@@ -46,16 +51,16 @@ const Home = () => {
   };
 
   const deleteOneToDo = (index) => {
-    let newToDo = toDos.filter((_, todoIndex) => todoIndex !== index);
-    setToDos(newToDo);
-    updateToDos(newToDo);
+    let newToDos = toDos.filter((_, todoIndex) => todoIndex !== index);
+    setToDos(newToDos);
+    updateToDos(newToDos);
   };
 
   const deleteAllToDos = () => {
-    var myHeaders = new Headers();
+    let myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
-    var requestOptions = {
+    let requestOptions = {
       method: "DELETE",
       headers: myHeaders,
       redirect: "follow"
@@ -89,52 +94,20 @@ const Home = () => {
       <h2 className="tracking-in-expand-forward-top">This is a ToDo List...</h2>
       <h6 className="tracking-in-expand-forward-top">...using Fetch</h6>
       <ul className="align-items-center tracking-in-expand-forward-bottom">
-        <li className="align-items-center shake-horizontal">
-          <input
-            type="text"
-            onChange={handleChange}
-            value={inputValue}
-            placeholder="Add some task"
-            onKeyDown={handleKeyDown}
-          />
-        </li>
-        {toDos.map((todos, id) => (
-          <li
-            key={id}
-            className="d-flex flex-nowrap justify-content-between list-item"
-          >
-            {todos.label}
-            <span>
-              <i
-                className="fas fa-trash-alt"
-                onClick={() => {
-                  deleteOneToDo(id);
-                }}
-              ></i>
-            </span>
-          </li>
-        ))}
+        <InputTask 
+        handleChange={handleChange}
+        handleKeyDown={handleKeyDown}
+        inputValue={inputValue}/>
+        <TaskList 
+        toDos={toDos}
+        deleteOneToDo={deleteOneToDo}/>
       </ul>
       <div>You have {toDos.length} remaining tasks</div>
-      <div
-        className="d-grid gap-2 col-6 p-5 mx-auto"
-        onMouseOver={handleMouseOver}
-        onMouseLeave={handleMouseLeave}
-      >
-        {showAlert && (
-          <div className="alert alert-danger fw-bold mt-2">
-            Clicking will delete all tasks. Are you completely sure?
-          </div>
-        )}
-        <button
-          type="button"
-          className="btn btn-danger btn-lg fw-bold"
-          onClick={deleteAllToDos}
-        >
-          Delete all tasks
-        </button>
-
-      </div>
+      <DeleteAllTasks
+      handleMouseLeave={handleMouseLeave}
+      handleMouseOver={handleMouseOver}
+      deleteAllToDos={deleteAllToDos}
+      showAlert={showAlert} />     
     </div>
   );
 };
