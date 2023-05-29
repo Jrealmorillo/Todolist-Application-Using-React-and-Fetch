@@ -12,13 +12,17 @@ const Home = () => {
 
   const handleChange = (event) => setInputValue(event.target.value);
 
+
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
       let newTodo = {
         label: inputValue,
         done: false
       };
-      setToDos((toDos) => [...toDos, newTodo]);
+      const updatedToDos = [...toDos, newTodo];
+      setToDos(updatedToDos);
+      updateToDos(updatedToDos);
+      
       setInputValue("");
     }
   };
